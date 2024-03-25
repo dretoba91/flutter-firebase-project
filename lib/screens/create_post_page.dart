@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:async';
@@ -7,12 +8,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_projects/model/post.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'package:flutter_firebase_projects/model/post.dart';
+
 class CreatePostPage extends StatefulWidget {
-  const CreatePostPage({super.key});
+  final bool isEditMode;
+  final Post? post;
+  const CreatePostPage({
+    super.key,
+    required this.isEditMode,
+    this.post,
+  });
 
   @override
   State<CreatePostPage> createState() => _CreatePostPageState();
@@ -24,6 +32,17 @@ class _CreatePostPageState extends State<CreatePostPage> {
   String imageUrl = '';
   File? imageFile;
   UploadTask? uploadTask;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEditMode) {
+      setState(() {
+        _bodyTextController.text = widget.post!.content;
+        imageUrl = widget.post!.imageUrl;
+      });
+    }
+  }
 
   Future _getFromCamera() async {
     XFile? result = await ImagePicker().pickImage(
@@ -102,7 +121,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
       return;
     }
     if (imageUrl == '') return;
-    final postId = getId();
+    final postId = widget.isEditMode ? widget.post!.id : getId();
     final postRef = FirebaseFirestore.instance.collection('Post').doc(postId);
 
     final post = Post(
@@ -114,10 +133,17 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     final json = post.toJson();
 
-    postRef.set(json).whenComplete(() {
-      const snackBar = SnackBar(content: Text('🎉🎈 Post Created!'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
+    if (widget.isEditMode) {
+      postRef.update(json).whenComplete(() {
+        const snackBar = SnackBar(content: Text('🎉🎈 UPDATED successfully!'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    } else {
+      postRef.set(json).whenComplete(() {
+        const snackBar = SnackBar(content: Text('🎉🎈 Post Created!'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
   }
 
   String getId() {
@@ -229,7 +255,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
               onPressed: () {
                 createPost();
               },
-              child: Text('Post Picture'),
+              child: widget.isEditMode ? Text('Update') : Text('Post'),
             ),
           )
         ],
