@@ -4,18 +4,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Post {
   final Timestamp createdAt;
   final String imageUrl;
+  final String id;
+  final String content;
+
   Post({
     required this.createdAt,
     required this.imageUrl,
+    required this.id,
+    required this.content,
   });
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'createdAt': createdAt,
         'imageUrl': imageUrl,
+        'content': content,
       };
 
   static Post fromJson(Map<String, dynamic> json) => Post(
-    createdAt: json['createdAt'], 
-    imageUrl: json['imageUrl']
-  );
+        id: json['id'],
+        createdAt: json['createdAt'],
+        imageUrl: json['imageUrl'],
+        content: json['content'],
+      );
 }
