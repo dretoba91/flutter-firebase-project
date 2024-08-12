@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_firebase_projects/authentication/login.dart';
 import 'package:flutter_firebase_projects/firebase_options.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
             contentTextStyle: TextStyle(fontSize: 24),
           ),
         ),
-        home: const HomePage(title: 'Picture Posts'),
+      home: const LoginPage(),
       );
   }
 }
