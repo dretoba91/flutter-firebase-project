@@ -2,9 +2,12 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_projects/authentication/login.dart';
 import 'package:flutter_firebase_projects/model/post.dart';
 import 'package:flutter_firebase_projects/screens/create_post_page.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -46,6 +49,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // log out
+
+  Future logOut() async {
+    var message = '';
+    try {
+      await FirebaseAuth.instance.signOut();
+      Future.delayed(const Duration(milliseconds: 3), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+        );
+      });
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,6 +83,19 @@ class _HomePageState extends State<HomePage> {
           widget.title,
         ),
         centerTitle: true,
+        actions: [
+          GestureDetector(
+            onTap: logOut,
+            child: const Padding(
+              padding: EdgeInsets.only(
+                right: 20,
+              ),
+              child: Icon(
+                Icons.logout_outlined,
+              ),
+            ),
+          ),
+        ],
       ),
       body: StreamBuilder(
         stream: readPost(),

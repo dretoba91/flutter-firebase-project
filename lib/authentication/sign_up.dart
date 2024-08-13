@@ -1,17 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_projects/authentication/sign_up.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class SignUp extends StatefulWidget {
+  const SignUp({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUp> createState() => _SignUpState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpState extends State<SignUp> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -36,11 +35,11 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
-  // Sign in with email and password auth
-  Future _signInWithEmailAndPassword() async {
+  Future _createWithEmailAndPassword() async {
     var message = '';
+
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailTextController.text,
         password: passwordTextController.text,
       );
@@ -52,13 +51,22 @@ class _LoginPageState extends State<LoginPage> {
         );
       });
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
-        message = 'Invalid login credentials.';
-      } else {
-        message = e.code;
+      if (e.code == 'weak-password') {
+        message = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        message = 'An account already exists with that email.';
       }
       Fluttertoast.showToast(
         msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0,
+      );
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Failed: $e",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.SNACKBAR,
         backgroundColor: Colors.black54,
@@ -135,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      _signInWithEmailAndPassword();
+                      _createWithEmailAndPassword();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -151,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: const Center(
                     child: Text(
-                      'Sign in',
+                      'Sign up',
                       style: TextStyle(
                         color: Color(0xFFFFFFFF),
                         fontFamily: "Montserrat",
@@ -165,37 +173,37 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(
                 height: 25,
               ),
-              Center(
-                  child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account? ",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Color(0xFF000000),
-                        fontFamily: "Montserrat",
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => SignUp()));
-                    },
-                    child: const Text(
-                      ' Sign up',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Color(0xFF287975),
-                          fontFamily: "Montserrat",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  )
-                ],
-              ))
+              // Center(
+              //     child: Row(
+              //   crossAxisAlignment: CrossAxisAlignment.center,
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Text(
+              //       "Don't have an account? ",
+              //       textAlign: TextAlign.center,
+              //       style: TextStyle(
+              //           color: Color(0xFF000000),
+              //           fontFamily: "Montserrat",
+              //           fontSize: 13,
+              //           fontWeight: FontWeight.w500),
+              //     ),
+              //     InkWell(
+              //       onTap: () {
+              //         // Navigator.push(context,
+              //         //     MaterialPageRoute(builder: (context) => SignUp()));
+              //       },
+              //       child: const Text(
+              //         ' Sign up',
+              //         textAlign: TextAlign.center,
+              //         style: TextStyle(
+              //             color: Color(0xFF287975),
+              //             fontFamily: "Montserrat",
+              //             fontSize: 16,
+              //             fontWeight: FontWeight.w500),
+              //       ),
+              //     )
+              //   ],
+              // ))
             ],
           ),
         ),
