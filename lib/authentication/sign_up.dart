@@ -101,6 +101,8 @@ class _SignUpState extends State<SignUp> {
               TextFormField(
                 controller: emailTextController,
                 validator: validateEmail,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   floatingLabelBehavior: FloatingLabelBehavior.never,
