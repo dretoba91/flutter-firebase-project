@@ -32,6 +32,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   dio: ^5.4.1
   file_picker: ^8.0.0+1
+  # firebase_app_check: ^0.2.2+7
   firebase_auth: ^4.20.0
   firebase_core: ^2.27.1
   firebase_storage: ^11.6.10
@@ -39,16 +40,12 @@ dependencies:
     sdk: flutter
   fluttertoast: ^8.2.6
   gallery_saver: ^2.3.2
+  google_sign_in: ^6.2.1
   image_picker: ^1.0.7
   intl: ^0.19.0
   path_provider: ^2.1.2
 
 dev_dependencies:
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^3.0.0
   flutter_test:
     sdk: flutter

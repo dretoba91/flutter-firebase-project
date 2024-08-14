@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_projects/authentication/sign_up.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -59,6 +62,44 @@ class _LoginPageState extends State<LoginPage> {
       }
       Fluttertoast.showToast(
         msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0,
+      );
+    }
+  }
+
+  // Signin with Google
+  Future signInWithGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn();
+
+      final user = await googleSignIn.signIn();
+      if (user == null) return;
+
+      final googleAuth = await user.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final currentUser =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      log("===> $currentUser");
+      if (currentUser.user!.emailVerified == true) {
+        Future.delayed(const Duration(milliseconds: 3), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const HomePage(title: 'Firebase Posts')),
+          );
+        });
+      }
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.toString(),
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.SNACKBAR,
         backgroundColor: Colors.black54,
@@ -129,6 +170,41 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(
                 height: 30,
+              ),
+              SizedBox(
+                height: 45,
+                width: MediaQuery.of(context).size.width * 0.70,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    signInWithGoogle();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40.0,
+                      vertical: 5.0,
+                    ),
+                    minimumSize: Size.zero,
+                  ),
+                  icon: Image.asset('assets/images/google.png'),
+                  label: const Center(
+                    child: Text(
+                      'Sign in with Google',
+                      style: TextStyle(
+                        color: Color(0xFF000000),
+                        fontFamily: "Montserrat",
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
               ),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.60,
