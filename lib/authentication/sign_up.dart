@@ -13,6 +13,8 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
+  final fullnameTextController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
 
   // Email validation
@@ -39,10 +41,17 @@ class _SignUpState extends State<SignUp> {
     var message = '';
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // creating user with Email and Password
+      final userResult =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailTextController.text,
         password: passwordTextController.text,
       );
+
+      // Creating a User collection in the Firestore database
+      User user = userResult.user!;
+      user.updateDisplayName(fullnameTextController.text);
+
       Future.delayed(const Duration(milliseconds: 3), () {
         Navigator.pushReplacement(
           context,
@@ -98,6 +107,33 @@ class _SignUpState extends State<SignUp> {
               const SizedBox(
                 height: 30,
               ),
+              TextFormField(
+                controller: fullnameTextController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your fullname';
+                  }
+                  return null;
+                },
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  labelText: 'Fullname',
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  border: InputBorder.none,
+                  filled: true,
+                  fillColor: Color(0xFFFFFFFF),
+                  labelStyle: TextStyle(
+                    color: Color(0xFF000000),
+                    fontFamily: "Montserrat",
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+
               TextFormField(
                 controller: emailTextController,
                 validator: validateEmail,

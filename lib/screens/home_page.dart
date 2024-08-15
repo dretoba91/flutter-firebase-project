@@ -9,6 +9,7 @@ import 'package:flutter_firebase_projects/model/post.dart';
 import 'package:flutter_firebase_projects/screens/create_post_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
   // log out
 
   Future logOut() async {
-    var message = '';
+    // var message = '';
     try {
       await FirebaseAuth.instance.signOut();
       Future.delayed(const Duration(milliseconds: 3), () {
@@ -75,6 +76,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // get created date
+
+  String getCreatedDate(Timestamp createdAt) {
+    final format = DateFormat('d MMM y');
+    return format.format(createdAt.toDate());
+  }
+
+  // get created time
+  String getCreatedTime(Timestamp createdAt) {
+    final format = DateFormat('jm');
+    return format.format(createdAt.toDate());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +97,7 @@ class _HomePageState extends State<HomePage> {
           widget.title,
         ),
         centerTitle: true,
+        elevation: 0,
         actions: [
           GestureDetector(
             onTap: logOut,
@@ -126,6 +141,45 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            posts[index].createdBy ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                getCreatedDate(posts[index].createdAt),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Text(
+                                getCreatedTime(posts[index].createdAt),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       Stack(
                         children: [
                           Image.network(

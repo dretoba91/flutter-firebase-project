@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -123,12 +124,15 @@ class _CreatePostPageState extends State<CreatePostPage> {
     if (imageUrl == '') return;
     final postId = widget.isEditMode ? widget.post!.id : getId();
     final postRef = FirebaseFirestore.instance.collection('Post').doc(postId);
+    final user = FirebaseAuth.instance.currentUser!;
 
     final post = Post(
       createdAt: Timestamp.now(),
       imageUrl: imageUrl,
       id: postId,
       content: _bodyTextController.text,
+      userId: user.uid,
+      createdBy: user.displayName,
     );
 
     final json = post.toJson();
