@@ -65,9 +65,9 @@ class _LoginPageState extends State<LoginPage> {
         msg: message,
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.black54,
+        backgroundColor: Colors.black,
         textColor: Colors.white,
-        fontSize: 14.0,
+        fontSize: 16.0,
       );
     }
   }

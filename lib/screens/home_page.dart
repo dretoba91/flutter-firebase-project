@@ -146,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            posts[index].createdBy ?? '',
+                            posts[index].createdBy,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -206,10 +206,25 @@ class _HomePageState extends State<HomePage> {
                         height: 12,
                       ),
                       SizedBox(
-                        height: 100,
+                        height: 50,
                         child: Text(
                           posts[index].content,
-                          style: const TextStyle(overflow: TextOverflow.fade),
+                          style: const TextStyle(
+                            overflow: TextOverflow.fade,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: Icon(
+                          Icons.favorite,
+                          color: Colors.red,
                         ),
                       ),
                     ],
@@ -218,7 +233,19 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           } else {
-            return const SizedBox(height: 0);
+            return const Center(
+              child: SizedBox(
+                height: 200,
+                child: Text(
+                  'No posts yet!!! 🙇🏽‍♂️🙇🏽‍♀️',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            );
           }
         },
       ),

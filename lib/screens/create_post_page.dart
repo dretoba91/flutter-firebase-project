@@ -132,21 +132,25 @@ class _CreatePostPageState extends State<CreatePostPage> {
       id: postId,
       content: _bodyTextController.text,
       userId: user.uid,
-      createdBy: user.displayName,
+      createdBy: user.displayName!,
+      likes: 0,
     );
 
     final json = post.toJson();
 
     if (widget.isEditMode) {
-      postRef.update(json).whenComplete(() {
+      await postRef.update(json).whenComplete(() {
         const snackBar = SnackBar(content: Text('🎉🎈 UPDATED successfully!'));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       });
+      Navigator.pop(context);
     } else {
-      postRef.set(json).whenComplete(() {
+      await postRef.set(json).whenComplete(() {
         const snackBar = SnackBar(content: Text('🎉🎈 Post Created!'));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       });
+
+      Navigator.pop(context);
     }
   }
 

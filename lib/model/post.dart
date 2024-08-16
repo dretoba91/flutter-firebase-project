@@ -6,8 +6,9 @@ class Post {
   final String imageUrl;
   final String id;
   final String content;
-  final userId;
-  final createdBy;
+  final String userId;
+  final String createdBy;
+  final int likes;
 
   Post({
     required this.createdAt,
@@ -16,6 +17,7 @@ class Post {
     required this.content,
     required this.userId,
     required this.createdBy,
+    required this.likes,
   });
 
   Map<String, dynamic> toJson() => {
@@ -25,14 +27,16 @@ class Post {
         'content': content,
         'userId': userId,
         'createdBy': createdBy,
+        'likes': likes,
       };
 
   static Post fromJson(Map<String, dynamic> json) => Post(
         id: json['id'],
         createdAt: json['createdAt'],
         imageUrl: json['imageUrl'],
-        content: json['content'], 
+        content: json['content'],
         userId: json['userId'],
         createdBy: json['createdBy'],
+        likes: json['likes'],
       );
 }
