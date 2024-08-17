@@ -21,12 +21,55 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Stream<List<Post>> readPost() => FirebaseFirestore.instance
-      .collection('Post')
-      .orderBy('createdAt', descending: true)
-      .snapshots()
-      .map((snapShot) =>
-          snapShot.docs.map((doc) => Post.fromJson(doc.data())).toList());
+  late String userId;
+  late Future<List<Post>> futurePost;
+  late List<Future<bool>> futureLikes;
+
+  @override
+  void initState() {
+    super.initState();
+    userId = FirebaseAuth.instance.currentUser!.uid;
+    getAllPosts();
+  }
+
+  // Get all Post
+  Future<void> getAllPosts() async {
+    futurePost = readPost();
+    final posts = await futurePost;
+
+    futureLikes = posts.map((post) {
+      log("posts => ${post.id}");
+      getLikeStatus(post.id);
+    }).toList() as List<Future<bool>>;
+    log("future likes: $futureLikes");
+    setState(() {});
+  }
+
+  ///    * Refactor the StreamBuilder widget to FutureBuilder widget
+  ///
+  ///    * Complete the like/unlike feature and the likes count feature.
+
+  // Fetch all Posts
+
+  ///    * Refactor the Stream type method to Future type method
+
+  Future<List<Post>> readPost() async {
+    final posts = await FirebaseFirestore.instance
+        .collection('Post')
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return posts.docs.map((doc) => Post.fromJson(doc.data())).toList();
+  }
+
+  /// Stream type method of fetching data.
+
+  // Stream<List<Post>> readPost() => FirebaseFirestore.instance
+  //     .collection('Post')
+  //     .orderBy('createdAt', descending: true)
+  //     .snapshots()
+  //     .map((snapShot) =>
+  //         snapShot.docs.map((doc) => Post.fromJson(doc.data())).toList());
 
   Future downloadFile(String url) async {
     // get directory from device
@@ -89,6 +132,47 @@ class _HomePageState extends State<HomePage> {
     return format.format(createdAt.toDate());
   }
 
+  // Handle like and unlike posts
+
+  Future<void> handleLikePost(Post post) async {
+    try {
+      final likeRef = FirebaseFirestore.instance
+          .collection('Post')
+          .doc(post.id)
+          .collection('Likes')
+          .doc(userId);
+
+      final likeSnapshot = await likeRef.get();
+
+      if (!likeSnapshot.exists) {
+        likeRef.set({'userId': likeSnapshot.id});
+      } else {
+        likeRef.delete();
+      }
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0,
+      );
+    }
+    getAllPosts();
+  }
+
+  Future<bool> getLikeStatus(String postId) async {
+    Future<bool> postLiked = FirebaseFirestore.instance
+        .collection('Post')
+        .doc(postId)
+        .collection('Likes')
+        .doc(userId)
+        .get()
+        .then((snapShot) => snapShot.exists);
+    return postLiked;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,8 +196,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: readPost(),
+      body: FutureBuilder(
+        future: futurePost,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final posts = snapshot.data!;
@@ -221,10 +305,17 @@ class _HomePageState extends State<HomePage> {
                         height: 20,
                       ),
                       GestureDetector(
-                        onTap: () {},
-                        child: Icon(
-                          Icons.favorite,
-                          color: Colors.red,
+                        onTap: () {
+                          handleLikePost(posts[index]);
+                        },
+                        child: FutureBuilder(
+                          future: futureLikes[index],
+                          builder: (context, snapshot) => Icon(
+                            snapshot.data == true
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: Colors.red,
+                          ),
                         ),
                       ),
                     ],
@@ -266,3 +357,151 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
+/// StreamBuilder widget
+/// 
+// StreamBuilder(
+//         stream: readPost(),
+//         builder: (context, snapshot) {
+//           if (snapshot.hasData) {
+//             final posts = snapshot.data!;
+//             return ListView.separated(
+//               padding: const EdgeInsets.all(12),
+//               separatorBuilder: (context, index) => const SizedBox(
+//                 height: 12,
+//               ),
+//               itemCount: posts.length,
+//               itemBuilder: (context, index) => InkWell(
+//                 onTap: () {
+//                   Navigator.push(
+//                     context,
+//                     MaterialPageRoute(
+//                       builder: (context) => CreatePostPage(
+//                         isEditMode: true,
+//                         post: posts[index],
+//                       ),
+//                     ),
+//                   );
+//                 },
+//                 child: Container(
+//                   padding: const EdgeInsets.all(8),
+//                   color: Colors.white,
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         crossAxisAlignment: CrossAxisAlignment.center,
+//                         children: [
+//                           Text(
+//                             posts[index].createdBy,
+//                             style: const TextStyle(
+//                               fontSize: 16,
+//                               fontWeight: FontWeight.w600,
+//                               color: Colors.black54,
+//                             ),
+//                           ),
+//                           Column(
+//                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                             crossAxisAlignment: CrossAxisAlignment.end,
+//                             children: [
+//                               Text(
+//                                 getCreatedDate(posts[index].createdAt),
+//                                 style: const TextStyle(
+//                                   fontSize: 13,
+//                                   fontWeight: FontWeight.w600,
+//                                   color: Colors.black54,
+//                                 ),
+//                               ),
+//                               Text(
+//                                 getCreatedTime(posts[index].createdAt),
+//                                 style: const TextStyle(
+//                                   fontSize: 13,
+//                                   fontWeight: FontWeight.w400,
+//                                   color: Colors.black54,
+//                                 ),
+//                               ),
+//                             ],
+//                           )
+//                         ],
+//                       ),
+//                       const SizedBox(
+//                         height: 10,
+//                       ),
+//                       Stack(
+//                         children: [
+//                           Image.network(
+//                             posts[index].imageUrl,
+//                             height: 200,
+//                             width: double.infinity,
+//                             fit: BoxFit.cover,
+//                           ),
+//                           Align(
+//                             alignment: Alignment.topRight,
+//                             child: Container(
+//                               color: Colors.pink[300],
+//                               child: IconButton(
+//                                 onPressed: () {
+//                                   downloadFile(posts[index].imageUrl);
+//                                 },
+//                                 icon: const Icon(Icons.download),
+//                               ),
+//                             ),
+//                           )
+//                         ],
+//                       ),
+//                       const SizedBox(
+//                         height: 12,
+//                       ),
+//                       SizedBox(
+//                         height: 50,
+//                         child: Text(
+//                           posts[index].content,
+//                           style: const TextStyle(
+//                             overflow: TextOverflow.fade,
+//                           ),
+//                           softWrap: true,
+//                           maxLines: 2,
+//                           overflow: TextOverflow.ellipsis,
+//                         ),
+//                       ),
+//                       const SizedBox(
+//                         height: 20,
+//                       ),
+//                       GestureDetector(
+//                         onTap: () {
+//                           handleLikePost(posts[index]);
+//                         },
+//                         child: FutureBuilder(
+//                           future: futureLikes[index],
+//                           builder: (context, snapshot) => Icon(
+//                             snapshot.data == true
+//                                 ? Icons.favorite
+//                                 : Icons.favorite_border,
+//                             color: Colors.red,
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ),
+//             );
+//           } else {
+//             return const Center(
+//               child: SizedBox(
+//                 height: 200,
+//                 child: Text(
+//                   'No posts yet!!! 🙇🏽‍♂️🙇🏽‍♀️',
+//                   style: TextStyle(
+//                     fontSize: 19,
+//                     fontWeight: FontWeight.w600,
+//                     color: Colors.black54,
+//                   ),
+//                 ),
+//               ),
+//             );
+//           }
+//         },
+//       ),
