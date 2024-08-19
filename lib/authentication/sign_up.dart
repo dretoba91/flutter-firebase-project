@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -38,7 +41,16 @@ class _SignUpState extends State<SignUp> {
   }
 
   Future _createWithEmailAndPassword() async {
+    final prefs = await SharedPreferences.getInstance();
     var message = '';
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF287975),
+        ),
+      ),
+    );
 
     try {
       // creating user with Email and Password
@@ -51,6 +63,9 @@ class _SignUpState extends State<SignUp> {
       // Creating a User collection in the Firestore database
       User user = userResult.user!;
       user.updateDisplayName(fullnameTextController.text);
+      if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
+        prefs.setString('authenticated', 'isAuthenticated');
+      }
 
       Future.delayed(const Duration(milliseconds: 3), () {
         Navigator.pushReplacement(

@@ -1,15 +1,14 @@
 // import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_firebase_projects/authentication/login.dart';
 import 'package:flutter_firebase_projects/firebase_options.dart';
-import 'package:flutter_firebase_projects/screens/home_page.dart';
+import 'package:flutter_firebase_projects/screens/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
-  );
+  );  
   // await FirebaseAppCheck.instance.activate();
   runApp(const MyApp());
 }
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
             contentTextStyle: TextStyle(fontSize: 24),
           ),
         ),
-      home: const LoginPage(),
+      home: const Splash(),
       );
   }
 }

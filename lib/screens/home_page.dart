@@ -11,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final String title;
@@ -30,6 +31,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     userId = FirebaseAuth.instance.currentUser!.uid;
     getAllPosts();
+    log("user id: $userId");
   }
 
   // Get all Post
@@ -95,9 +97,10 @@ class _HomePageState extends State<HomePage> {
   // log out
 
   Future logOut() async {
-    // var message = '';
+    final prefs = await SharedPreferences.getInstance();
     try {
       await FirebaseAuth.instance.signOut();
+      await prefs.clear();
       Future.delayed(const Duration(milliseconds: 3), () {
         Navigator.pushReplacement(
           context,
@@ -158,7 +161,9 @@ class _HomePageState extends State<HomePage> {
         fontSize: 14.0,
       );
     }
-    getAllPosts();
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      getAllPosts();
+    });
   }
 
   Future<bool> getLikeStatus(String postId) async {

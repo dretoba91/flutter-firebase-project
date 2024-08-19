@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_firebase_projects/authentication/sign_up.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,12 +45,27 @@ class _LoginPageState extends State<LoginPage> {
 
   // Sign in with email and password auth
   Future _signInWithEmailAndPassword() async {
+    final prefs = await SharedPreferences.getInstance();
     var message = '';
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF287975),
+        ),
+      ),
+    );
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailTextController.text,
         password: passwordTextController.text,
       );
+
+      if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
+        prefs.setString('authenticated', 'isAuthenticated');
+      }
+
+      // FirebaseAuth.instance.currentUser.u
       Future.delayed(const Duration(milliseconds: 3), () {
         Navigator.pushReplacement(
           context,
@@ -74,6 +92,15 @@ class _LoginPageState extends State<LoginPage> {
 
   // Signin with Google
   Future signInWithGoogle() async {
+    final prefs = await SharedPreferences.getInstance();
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF287975),
+        ),
+      ),
+    );
     try {
       final googleSignIn = GoogleSignIn();
 
@@ -88,8 +115,11 @@ class _LoginPageState extends State<LoginPage> {
 
       final currentUser =
           await FirebaseAuth.instance.signInWithCredential(credential);
-      log("===> $currentUser");
       if (currentUser.user!.emailVerified == true) {
+
+        if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
+          prefs.setString('authenticated', 'isAuthenticated');
+        }
         Future.delayed(const Duration(milliseconds: 3), () {
           Navigator.pushReplacement(
             context,
