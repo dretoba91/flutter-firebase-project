@@ -22,7 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late String userId;
-  late Future<List<Post>> futurePost;
+  late Future<List<Post>> futurePosts;
   late List<Future<bool>> futureLikes;
 
   @override
@@ -34,13 +34,12 @@ class _HomePageState extends State<HomePage> {
 
   // Get all Post
   Future<void> getAllPosts() async {
-    futurePost = readPost();
-    final posts = await futurePost;
+    futurePosts = readPost();
+    final posts = await futurePosts;
 
     futureLikes = posts.map((post) {
-      log("posts => ${post.id}");
-      getLikeStatus(post.id);
-    }).toList() as List<Future<bool>>;
+      return getLikeStatus(post.id);
+    }).toList();
     log("future likes: $futureLikes");
     setState(() {});
   }
@@ -196,8 +195,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: FutureBuilder(
-        future: futurePost,
+      body: FutureBuilder<List<Post>>(
+        future: futurePosts,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final posts = snapshot.data!;
