@@ -99,7 +99,23 @@ class _HomePageState extends State<HomePage> {
   Future logOut() async {
     final prefs = await SharedPreferences.getInstance();
     try {
-      await FirebaseAuth.instance.signOut();
+      final tokenRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .collection('FcmToken')
+          .doc(userId);
+
+      tokenRef.delete().catchError(
+        (error) {
+          log("inside delete error");
+          debugPrint(error.toString());
+        },
+      );
+
+      FirebaseAuth.instance.signOut();
+
+      // delete phone token to avoid sending notification after signing out
+
       await prefs.clear();
       Future.delayed(const Duration(milliseconds: 3), () {
         Navigator.pushReplacement(

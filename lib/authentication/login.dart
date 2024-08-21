@@ -2,7 +2,9 @@
 
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_projects/authentication/reset_password.dart';
 import 'package:flutter_firebase_projects/authentication/sign_up.dart';
@@ -59,7 +61,8 @@ class _LoginPageState extends State<LoginPage> {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailTextController.text,
         password: passwordTextController.text,
-      );
+          )
+          .then((value) => createToken());
 
       if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
         prefs.setString('authenticated', 'isAuthenticated');
@@ -114,9 +117,10 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       final currentUser =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+          await FirebaseAuth.instance
+          .signInWithCredential(credential)
+          .then((value) => createToken());
       if (currentUser.user!.emailVerified == true) {
-
         if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
           prefs.setString('authenticated', 'isAuthenticated');
         }
@@ -138,6 +142,27 @@ class _LoginPageState extends State<LoginPage> {
         fontSize: 14.0,
       );
     }
+  }
+
+  // Creating User collection to store phone token
+
+  Future createToken() async {
+    final user = FirebaseAuth.instance.currentUser!;
+    final tokenRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user.uid)
+        .collection('FcmToken')
+        .doc(user.uid);
+
+    // get phone token
+    final token = await FirebaseMessaging.instance.getToken();
+    final json = {'token': token};
+    tokenRef.set(json).catchError((error) {
+      final snackBar = SnackBar(
+        content: Text('error: ${error.toString()}'),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
   }
 
   @override

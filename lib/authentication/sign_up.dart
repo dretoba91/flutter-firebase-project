@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_projects/screens/home_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -58,7 +60,8 @@ class _SignUpState extends State<SignUp> {
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailTextController.text,
         password: passwordTextController.text,
-      );
+          )
+          .then((value) => createToken());
 
       // Creating a User collection in the Firestore database
       User user = userResult.user!;
@@ -99,6 +102,29 @@ class _SignUpState extends State<SignUp> {
       );
     }
   }
+
+  // Creating User collection to store phone token
+
+  Future createToken() async {
+    final user = FirebaseAuth.instance.currentUser!;
+    final tokenRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user.uid)
+        .collection('FcmToken')
+        .doc(user.uid);
+
+    // get phone token
+    final token = await FirebaseMessaging.instance.getToken();
+    final json = {'token': token};
+    tokenRef.set(json).catchError((error) {
+      final snackBar = SnackBar(
+        content: Text(error.toString()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
