@@ -40,7 +40,7 @@ class FirebaseNotificationApi {
         ?.createNotificationChannel(channel);
   }
 
-  // for Foreground notification
+  // for Foreground notification for Android
   final channel = const AndroidNotificationChannel(
     'high_importance_channel',
     'High Importance Notification',
@@ -49,41 +49,7 @@ class FirebaseNotificationApi {
     playSound: true,
   );
 
-  //  initialize function to define all the required push notification functionalities
-
-  Future<void> initNotifications() async {
-    // Setting permission request
-    final settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      sound: true,
-      badge: true,
-    );
-
-    debugPrint(
-        "user granted permission status: ${settings.authorizationStatus}");
-
-    final fcmToken = await _firebaseMessaging.getToken();
-
-    // In real application, you send this token to the backend
-    log("phone token: $fcmToken");
-
-    // For background and terminated notification
-    FirebaseMessaging.onBackgroundMessage(handleOnBackgroungMessage);
-
-    // Foreground
-    foregroundMessage();
-    FirebaseMessaging.onMessage.listen((message) {
-      debugPrint("Got a message while in foreground");
-      debugPrint("Message Data: ${message.data}");
-
-      if (message.notification != null) {
-        log("Got a message with notification: ${message.notification}");
-      }
-
-      handleForegroundMessage(message);
-    });
-    initLocalNotification();
-  }
+  // Forground message settings for IOS
 
   Future foregroundMessage() async {
     await FirebaseMessaging.instance
@@ -116,4 +82,43 @@ class FirebaseNotificationApi {
       );
     }
   }
+
+  //  initialize function to define all the required push notification functionalities
+  Future<void> initNotifications() async {
+    // Setting permission request
+    final settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      sound: true,
+      badge: true,
+    );
+
+    debugPrint(
+        "user granted permission status: ${settings.authorizationStatus}");
+
+    final fcmToken = await _firebaseMessaging.getToken();
+
+    // In real application, you send this token to the backend
+    log("phone token: $fcmToken");
+
+    // For background and terminated notification
+    FirebaseMessaging.onBackgroundMessage(handleOnBackgroungMessage);
+
+    // Foreground
+    foregroundMessage();
+    FirebaseMessaging.onMessage.listen((message) {
+      debugPrint("Got a message while in foreground");
+      debugPrint("Message Data: ${message.data}");
+
+      if (message.notification != null) {
+        log("Got a message with notification: ${message.notification}");
+      }
+
+      handleForegroundMessage(message);
+    });
+
+
+    initLocalNotification();
+  }
+
+ 
 }
